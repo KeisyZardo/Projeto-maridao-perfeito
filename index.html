@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O Jogo do Maridão Perfeito ❤️</title>
+<style>
+:root{--pink:#ff6f9f;--ink:#4a2435}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);background:radial-gradient(circle at top,#ffe8f0,#fff8fb 55%,#fbe5ef);display:grid;place-items:center;padding:20px}
+.card{width:min(100%,560px);background:#ffffffeb;border:1px solid #f8c8d9;border-radius:28px;padding:clamp(22px,5vw,38px);box-shadow:0 18px 60px #9e45601c}
+.heart,.confetti{text-align:center;font-size:2.5rem}.eyebrow{text-align:center;text-transform:uppercase;letter-spacing:.15em;font-size:.72rem;font-weight:800;color:#c64d7b}
+h1{text-align:center;font-size:clamp(1.8rem,6vw,2.5rem);line-height:1.1;margin:10px 0 14px}p{line-height:1.6}.intro{text-align:center}
+button{font:inherit;cursor:pointer;border:0;border-radius:15px;padding:14px 18px;font-weight:750;transition:transform .15s,filter .15s}
+button:hover{filter:brightness(.98);transform:translateY(-1px)}button:focus-visible,input:focus-visible{outline:3px solid #9b4165;outline-offset:3px}
+.primary{display:block;width:100%;background:var(--pink);color:white;margin-top:20px}
+.option{display:block;width:100%;text-align:left;background:#fff4f8;border:1px solid #f4c5d6;color:var(--ink);margin:10px 0}.option:hover{background:#ffe5ee}.option:disabled{cursor:default;opacity:.8}
+.topline{display:flex;justify-content:space-between;gap:12px;font-size:.9rem;font-weight:700;color:#9b4165}
+.track{height:8px;background:#f9e2eb;border-radius:99px;overflow:hidden;margin:12px 0 25px}.fill{height:100%;background:var(--pink);width:0;transition:width .25s}
+.question{font-size:1.3rem;font-weight:800;line-height:1.35;margin:20px 0}
+.feedback{min-height:28px;font-weight:700;text-align:center;color:#a43c68}
+.hidden{display:none}.small{text-align:center;font-size:.85rem;color:#906b79;margin-top:18px}
+.result{font-size:1.4rem;text-align:center;font-weight:850;margin:12px 0}.score{text-align:center;font-size:1.05rem}
+.answer-input{width:100%;font:inherit;padding:14px 15px;border:1px solid #f0b8cd;border-radius:14px;background:#fffafd;color:var(--ink)}
+.hint{font-size:.85rem;color:#906b79;margin:8px 0}
+</style>
+</head>
+<body>
+<main class="card">
+<section id="start">
+  <div class="heart">💌🐱</div><div class="eyebrow">um teste muito sério (ou quase)</div>
+  <h1>O Jogo do<br>Maridão Perfeito</h1>
+  <p class="intro">Amoreco, chegou a hora de provar que você presta atenção nos detalhes da nossa história! São 5 perguntas e até 50 pontos. Algumas são de digitar e outras são de marcar — sem fugir, hein? 👀❤️</p>
+  <button class="primary" id="startBtn">Começar o teste 💘</button>
+  <p class="small">Feito com carinho, zoeira e uma pitadinha de cobrança 😂</p>
+</section>
+<section id="quiz" class="hidden">
+  <div class="topline"><span id="step">Pergunta 1 de 5</span><span id="scoreNow">0 pontos</span></div>
+  <div class="track"><div class="fill" id="progress"></div></div>
+  <div class="question" id="question"></div>
+  <div id="answerArea"></div>
+  <div class="feedback" id="feedback" aria-live="polite"></div>
+  <button class="primary" id="submitBtn">Confirmar resposta 💌</button>
+  <button class="primary hidden" id="nextBtn">Próxima pergunta ➜</button>
+</section>
+<section id="resultScreen" class="hidden">
+  <div class="confetti">💗 ✨ 🏆 ✨ 💗</div><div class="eyebrow">resultado oficialíssimo</div>
+  <h1>Teste concluído!</h1><div class="result" id="rank"></div><p class="score" id="finalScore"></p>
+  <p class="intro" id="message"></p>
+  <button class="primary" id="againBtn">Jogar de novo 🔁</button>
+  <p class="small">Lembrete: amor de verdade também se prova com carinho, respeito e parceria. ❤️</p>
+</section>
+</main>
+<script>
+const questions = [
+ {q:"Qual foi o dia exato em que adotamos a gatinha Canela?",type:"text",placeholder:"Digita a data (DD/MM/AAAA)",accept:v=>v.replace(/\s/g,"")==="15/05/2024",ok:"Parabéns! Pai presente da Canela! 🐱 +10 pontos",bad:"ERROU! COMO VOCÊ PODE FAZER ISSO COM NOSSA FILHA?! 😿"},
+ {q:"Qual é a minha comida favorita no mundo inteiro?",type:"text",placeholder:"Pode digitar aqui...",accept:v=>v.trim().toLowerCase()==="sushi",ok:"ACERTOU, MISERÁVI! 🍣 +10 pontos",bad:"ERROU! 0 AMOR. 0 pontos. 😂"},
+ {q:"Escolha uma opção MUITO séria:",type:"choice",options:["A) Jotta a Peste","B) A Mamolada"],correct:1,ok:"Que bom gosto! +10 pontos 😎",bad:"Jotta a Peste?! A SÉRIO? 😂 0 pontos!"},
+ {q:"De 0 a 100%, quanto você me ama?",type:"text",placeholder:"Digita um número de 0 a 100",accept:v=>/^100%?$/.test(v.trim()),ok:"ISSO! Amor nível máximo! ❤️ +10 pontos",bad:"Menos de 100%?! Vamos conversar... 😂",validate:v=>/^\d{1,3}%?$/.test(v.trim())&&Number(v.trim().replace("%",""))>=0&&Number(v.trim().replace("%",""))<=100},
+ {q:"Pergunta surpresa: o que mais importa em um relacionamento?",type:"choice",options:["A) Ganhar todas as discussões","B) Carinho, respeito e parceria","C) Ganhar presentes caros"],correct:1,ok:"AÍ SIM! O segredo é parceria! 💞 +10 pontos",bad:"Dica: relacionamento é parceria e respeito! ❤️"}
+];
+let index=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function show(id){["start","quiz","resultScreen"].forEach(s=>$(s).classList.toggle("hidden",s!==id))}
+function start(){index=0;score=0;show("quiz");render()}
+function render(){
+ answered=false;const item=questions[index];
+ $("step").textContent=`Pergunta ${index+1} de ${questions.length}`;$("scoreNow").textContent=`${score} pontos`;
+ $("progress").style.width=`${index/questions.length*100}%`;$("question").textContent=item.q;$("feedback").textContent="";
+ $("nextBtn").classList.add("hidden");$("submitBtn").classList.remove("hidden");$("submitBtn").textContent="Confirmar resposta 💌";
+ const area=$("answerArea");area.innerHTML="";
+ if(item.type==="text"){
+  const input=document.createElement("input");input.className="answer-input";input.id="typedAnswer";input.placeholder=item.placeholder;input.autocomplete="off";
+  if(index===3){input.type="text";input.inputMode="numeric";input.maxLength=4}
+  input.setAttribute("aria-label","Sua resposta");area.appendChild(input);input.addEventListener("keydown",e=>{if(e.key==="Enter")submitAnswer()});input.focus();
+ } else {
+  item.options.forEach((option,i)=>{const label=document.createElement("label");label.style.display="block";label.style.margin="12px 0";label.style.padding="14px";label.style.border="1px solid #f4c5d6";label.style.borderRadius="14px";label.style.background="#fff4f8";label.style.cursor="pointer";
+   const radio=document.createElement("input");radio.type="radio";radio.name="choice";radio.value=i;radio.style.marginRight="10px";label.appendChild(radio);label.appendChild(document.createTextNode(option));area.appendChild(label)});
+ }
+}
+function submitAnswer(){
+ if(answered)return;const item=questions[index];let correct=false;
+ if(item.type==="text"){
+  const input=$("typedAnswer");const value=input.value.trim();
+  if(!value){$("feedback").textContent="Responde, amoreco! Não vale pular! 👀";input.focus();return}
+  if(item.validate&&!item.validate(value)){$("feedback").textContent="Ops! Digita uma resposta válida antes de continuar. 😅";input.focus();return}
+  correct=item.accept(value);
+ }else{
+  const selected=document.querySelector('input[name="choice"]:checked');
+  if(!selected){$("feedback").textContent="Escolhe uma opção, amoreco! 👀";return}
+  correct=Number(selected.value)===item.correct;
+ }
+ answered=true;if(correct){score+=10;$("feedback").textContent=item.ok}else $("feedback").textContent=item.bad;
+ $("scoreNow").textContent=`${score} pontos`;$("progress").style.width=`${(index+1)/questions.length*100}%`;
+ $("submitBtn").classList.add("hidden");$("nextBtn").textContent=index===questions.length-1?"Ver meu resultado 🏆":"Próxima pergunta ➜";$("nextBtn").classList.remove("hidden");
+}
+function next(){index++;if(index<questions.length)render();else finish()}
+function finish(){
+ show("resultScreen");$("finalScore").textContent=`Você fez ${score} de 50 pontos!`;
+ let rank,message;
+ if(score===50){rank="LENDA DO AMOR! 💍";message="GABARITOU! Maridão do Ano. Guarde esse certificado imaginário com orgulho! ❤️"}
+ else if(score>=40){rank="MARIDÃO DE ELITE! 🥰";message="Tá indo muito bem, amoreco! Quase gabaritou."}
+ else if(score>=30){rank="MARIDÃO PROMISSOR! 😂";message="Tem potencial! Uma revisão carinhosa pode ajudar."}
+ else if(score>=10){rank="MARIDÃO EM TREINAMENTO 😅";message="Hora de revisar as memórias e continuar construindo a história juntos."}
+ else{rank="ALERTA VERMELHO NO ROMANCE! 🚨";message="Opa! Hora de jogar de novo e rir um pouquinho juntos."}
+ $("rank").textContent=rank;$("message").textContent=message;
+}
+$("startBtn").addEventListener("click",start);$("submitBtn").addEventListener("click",submitAnswer);$("nextBtn").addEventListener("click",next);$("againBtn").addEventListener("click",start);
+</script>
+</body></html>
